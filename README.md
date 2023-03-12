@@ -1,4 +1,4 @@
 # rot
 
 # Usage 
-rot -t `text` -k `integer`
+$ go run main.go -t `text` -k `integer`
