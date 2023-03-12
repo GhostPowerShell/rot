@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 const (
@@ -27,27 +27,28 @@ func rotN(input string, key int) string {
 }
 
 func main() {
-	if len(os.Args) != 3 {
-		fmt.Fprintf(os.Stderr, "Usage: %s plaintext key\n", os.Args[0])
-		return
-	}
+	var plaintext string
+	var key int
+	flag.StringVar(&plaintext, "t", "", "the plaintext to encrypt")
+	flag.IntVar(&key, "k", 0, "the encryption key")
+	flag.Parse()
 
-	plaintext := os.Args[1]
-	key, err := strconv.Atoi(os.Args[2])
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Invalid key:", os.Args[2])
-		return
+	if plaintext == "" || key == 0 {
+		fmt.Fprintln(os.Stderr, "Usage: rot -t plaintext -k key")
+		os.Exit(1)
+	}
+	if key < 0 {
+		fmt.Fprintln(os.Stderr, "Invalid key:", key)
+		os.Exit(1)
 	}
 
 	ciphertext := rotN(plaintext, key)
 
-	var output bytes.Buffer
-	output.WriteString(whiteBoldColor)
-	output.WriteString("Your text: ")
-	output.WriteString(redColor)
-	output.WriteString(ciphertext)
-	output.WriteString("\n")
-	output.WriteString(resetColor)
+	output := fmt.Sprintf("%sYour text: %s%s\n%s", whiteBoldColor, redColor, ciphertext, resetColor)
 
-	os.Stdout.Write(output.Bytes())
+	if _, err := os.Stdout.WriteString(output); err != nil {
+		fmt.Fprintln(os.Stderr, "Error writing output:", err)
+		os.Exit(1)
+	}
+
 }
